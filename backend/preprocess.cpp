@@ -27,6 +27,11 @@ void Preprocess::doWork()
     while (1)
     {
         m_mutexPtr->lock();
+        while (m_tensorListPtr->size() >= MAX_LIST_LEN)
+        {
+            // 等待被消费者（Infer线程）唤醒
+            m_condPtr->wait(m_mutexPtr);
+        }
 
         while (m_imgListPtr->isEmpty() && !m_stopped)
         {

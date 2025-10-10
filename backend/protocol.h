@@ -14,6 +14,7 @@
 #define INPUT_WIDTH     640.0f
 #define CONF_THRESHOLD  0.1f
 #define NMS_THRESHOLD   0.35f
+#define MAX_LIST_LEN    16
 
 using namespace cv;
 
