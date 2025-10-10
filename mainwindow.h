@@ -60,6 +60,7 @@ private:
 private slots:
     void selectImg();
     void selectFolder();
+    void selectVideo();
     void mainThread();
     void visualizeResult(cv::Mat o, cv::Mat r);
     void selectMNN();

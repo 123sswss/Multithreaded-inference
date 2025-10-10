@@ -5,6 +5,7 @@ HEADERS += \
     $$PWD/preprocess.h \
     $$PWD/protocol.h \
     $$PWD/task.h \
+    $$PWD/videoWidget.h \
     $$PWD/worker.h
 
 SOURCES += \
@@ -12,4 +13,5 @@ SOURCES += \
     $$PWD/infer.cpp \
     $$PWD/myutils.cpp \
     $$PWD/preprocess.cpp \
-    $$PWD/task.cpp
+    $$PWD/task.cpp \
+    $$PWD/videoWidget.cpp

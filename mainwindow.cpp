@@ -29,6 +29,8 @@ void MainWindow::init()
     connect(ui->selectFolder, &QPushButton::clicked, this, &MainWindow::selectFolder);
     connect(ui->infer, &QPushButton::clicked, this, &MainWindow::mainThread);
     connect(ui->selectMNN, &QPushButton::clicked, this, &MainWindow::selectMNN);
+    connect(ui->openCap, &QPushButton::clicked, this, &MainWindow::initCap);
+    connect(ui->selectVideo, &QPushButton::clicked, this, &MainWindow::selectVideo);
 }
 
 void MainWindow::initCap()
@@ -42,6 +44,7 @@ void MainWindow::initCap()
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::update_camera_display);
     timer->start(int(1000.0f/Protocol::FPS));
+    if (infering) sharedCondition.wakeAll();
 }
 
 // 选择单个文件
@@ -121,6 +124,52 @@ void MainWindow::selectFolder()
         }
     }
     qDebug()<<"imgList.length()"<<imgList.length();
+}
+
+// 选择视频文件并以处理图片文件相同的方式处理视频的每一帧
+void MainWindow::selectVideo()
+{
+    QString videoPath = QFileDialog::getOpenFileName(this, tr("选择视频文件"),
+                                                     "E:/AAA24105033/project/qt/yoloInfer/vedio",
+                                                     tr("视频文件 (*.mp4 *.avi *.mov *.mkv);;All Files (*)"));
+
+    if (!videoPath.isEmpty())
+    {
+        cv::VideoCapture cap(videoPath.toStdString());
+
+        if (!cap.isOpened())
+        {
+            QMessageBox::warning(this, "错误", "打开视频文件失败喵！");
+            return;
+        }
+
+        cv::Mat frame; // 创建一个Mat对象，用来存放视频的每一帧画面
+        while (cap.read(frame))
+        {
+            if (frame.empty())
+            {
+                break;
+            }
+
+            inputImg img;
+            frame.copyTo(img.oImg);
+
+            // 调用和之前一样的检查方法喵
+            if (img.fastCheck())
+            {
+                imgList.append(img);
+                img.fastVisual();
+            }
+            else
+            {
+                QMessageBox::warning(this, "错误", "视频的某一帧存在空数据，读取错误喵。");
+            }
+        }
+
+        cap.release();
+    }
+
+    qDebug() << "imgList.length()" << imgList.length();
 }
 
 void MainWindow::selectMNN()
