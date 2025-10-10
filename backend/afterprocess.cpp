@@ -28,7 +28,7 @@ void Afterprocess::doWork()
 
         while (m_outputTensorPtr->isEmpty() && !m_stopped)
         {
-            qDebug() << "没有tensor了";
+            // qDebug() << "没有tensor了";
             // 如果列表是空的，就调用 wait()，它会：
             // a. 自动解开 m_mutexPtr 这个锁
             // b. 让线程在这里睡觉
@@ -41,9 +41,9 @@ void Afterprocess::doWork()
         }
 
         afterInfer currentResult = m_outputTensorPtr->first();
-        currentResult.fastVisual();
+        // currentResult.fastVisual();
 
-        cv::Mat ooImg = currentResult.oImg.clone();
+        // cv::Mat ooImg = currentResult.oImg.clone();
         m_outputTensorPtr->removeFirst();
         m_mutexPtr->unlock();
 
@@ -55,11 +55,11 @@ void Afterprocess::doWork()
         {
             myutils::scale_coords(detections, currentResult);
 
-            qDebug() << "检测到 " << detections.size() << " 个目标。";
+            // qDebug() << "检测到 " << detections.size() << " 个目标。";
 
             for (const auto& det : detections)
             {
-                qDebug() << "坐标：" << det.box.x << det.box.y << det.box.width << det.box.height;
+                // qDebug() << "坐标：" << det.box.x << det.box.y << det.box.width << det.box.height;
                 cv::rectangle(currentResult.oImg, det.box, cv::Scalar(0, 255, 0), 2);
                 std::string label = Protocol::class_names[det.classId] + " " + cv::format("%.2f", det.confidence);
                 cv::putText(currentResult.oImg, label, cv::Point(det.box.x, det.box.y - 10), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 2);
@@ -67,13 +67,13 @@ void Afterprocess::doWork()
         }
         else
         {
-            qDebug() << "在当前阈值下，未检测到任何目标。";
+            // qDebug() << "在当前阈值下，未检测到任何目标。";
         }
 
         // 后处理结束 //
         delete currentResult.hostOutputTensor;
-        emit resultImg(ooImg, currentResult.oImg);
-        m_condPtr->wakeAll();
+        emit resultImg(currentResult.oImg);
+        // m_condPtr->wakeOne();
     }
     emit finished();
 }

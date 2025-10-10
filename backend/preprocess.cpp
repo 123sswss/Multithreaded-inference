@@ -30,7 +30,7 @@ void Preprocess::doWork()
 
         while (m_imgListPtr->isEmpty() && !m_stopped)
         {
-            qDebug() << "没有图片了";
+            // qDebug() << "没有图片了";
             // 如果列表是空的，就调用 wait()，它会：
             // a. 自动解开 m_mutexPtr 这个锁
             // b. 让线程在这里睡觉
@@ -43,7 +43,7 @@ void Preprocess::doWork()
         }
 
         inputImg currentImg = m_imgListPtr->first();
-        currentImg.fastVisual();
+        // currentImg.fastVisual();
 
         m_imgListPtr->removeFirst();
         m_mutexPtr->unlock();
@@ -82,7 +82,7 @@ void Preprocess::doWork()
         m_mutexPtr->lock();
         m_tensorListPtr->append(tmp);
         m_mutexPtr->unlock();
-        m_condPtr->wakeAll();
+        m_condPtr->wakeOne();
     }
     emit finished();
 }

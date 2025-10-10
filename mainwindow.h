@@ -21,6 +21,7 @@
 #include "backend/preprocess.h"
 #include "backend/infer.h"
 #include "backend/afterprocess.h"
+#include "backend/videoWidget.h"
 
 namespace Ui {
 class MainWindow;
@@ -62,7 +63,7 @@ private slots:
     void selectFolder();
     void selectVideo();
     void mainThread();
-    void visualizeResult(cv::Mat o, cv::Mat r);
+    void visualizeResult(cv::Mat r);
     void selectMNN();
 
     void update_camera_display();

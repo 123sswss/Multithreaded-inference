@@ -29,7 +29,7 @@ private:
     QWaitCondition* m_condPtr;                      // 指向等待条件的指针
     bool m_stopped;                                 // 控制循环是否继续的开关
 signals:
-    void resultImg(cv::Mat o, cv::Mat r);
+    void resultImg(cv::Mat r);
 };
 
 #endif // AFTERPROCESS_H

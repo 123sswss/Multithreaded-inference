@@ -34,7 +34,7 @@ void Infer::doWork()
 
         while (m_inputTensorPtr->isEmpty() && !m_stopped)
         {
-            qDebug() << "没有tensor了";
+            // qDebug() << "没有tensor了";
             // 如果列表是空的，就调用 wait()，它会：
             // a. 自动解开 m_mutexPtr 这个锁
             // b. 让线程在这里睡觉
@@ -74,7 +74,7 @@ void Infer::doWork()
         m_outputTensorPtr->append(tmp);
         m_mutexPtr->unlock();
         delete hostInputTensor;
-        m_condPtr->wakeAll();
+        m_condPtr->wakeOne();
     }
     m_interpreter->releaseSession(m_session);
     emit finished();

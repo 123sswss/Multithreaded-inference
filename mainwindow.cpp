@@ -31,6 +31,7 @@ void MainWindow::init()
     connect(ui->selectMNN, &QPushButton::clicked, this, &MainWindow::selectMNN);
     connect(ui->openCap, &QPushButton::clicked, this, &MainWindow::initCap);
     connect(ui->selectVideo, &QPushButton::clicked, this, &MainWindow::selectVideo);
+    ui->vWidget->setStyleSheet("background-color: black;");
 }
 
 void MainWindow::initCap()
@@ -44,7 +45,7 @@ void MainWindow::initCap()
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::update_camera_display);
     timer->start(int(1000.0f/Protocol::FPS));
-    if (infering) sharedCondition.wakeAll();
+    if (infering) sharedCondition.wakeOne();
 }
 
 // 选择单个文件
@@ -71,7 +72,7 @@ void MainWindow::selectImg()
     {
         imgList.append(img);
         img.fastVisual();
-        if (infering) sharedCondition.wakeAll();
+        if (infering) sharedCondition.wakeOne();
     }
     else
     {
@@ -116,6 +117,7 @@ void MainWindow::selectFolder()
             {
                 imgList.append(img);
                  img.fastVisual();
+                 if (infering) sharedCondition.wakeOne();
             }
             else
             {
@@ -139,7 +141,7 @@ void MainWindow::selectVideo()
 
         if (!cap.isOpened())
         {
-            QMessageBox::warning(this, "错误", "打开视频文件失败喵！");
+            QMessageBox::warning(this, "错误", "打开视频文件失败！");
             return;
         }
 
@@ -154,11 +156,12 @@ void MainWindow::selectVideo()
             inputImg img;
             frame.copyTo(img.oImg);
 
-            // 调用和之前一样的检查方法喵
+            // 调用检查方法喵
             if (img.fastCheck())
             {
                 imgList.append(img);
                 img.fastVisual();
+                if (infering) sharedCondition.wakeOne();
             }
             else
             {
@@ -233,15 +236,11 @@ void MainWindow::mainThread()
 
 }
 
-void MainWindow::visualizeResult(const cv::Mat o, const cv::Mat r)
+void MainWindow::visualizeResult(const cv::Mat r)
 {
-    cv::cvtColor(o, copy, cv::COLOR_BGR2RGB);
-    QImage oImg(copy.data, copy.cols, copy.rows, copy.step, QImage::Format_RGB888);
-    ui->inImg->setPixmap(QPixmap::fromImage(oImg));
-    copy.release();
     cv::cvtColor(r, copy, cv::COLOR_BGR2RGB);
     QImage rImg(copy.data, copy.cols, copy.rows, copy.step, QImage::Format_RGB888);
-    ui->outImg->setPixmap(QPixmap::fromImage(rImg));
+    ui->vWidget->setImage(rImg.copy());
     copy.release();
 }
 
@@ -257,11 +256,11 @@ void MainWindow::update_camera_display()
         imgList.append(img);
 
         // 颜色频道转换 BGR -> RGB
-        cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
+        // cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
         // 把 cv::Mat 转成 QImage
-        QImage qimg(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
-        ui->inImg->setPixmap(QPixmap::fromImage(qimg));
-        ui->inImg->setScaledContents(true); // 让图像自适应QLabel大小
+        // QImage qimg(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+        // ui->inImg->setPixmap(QPixmap::fromImage(qimg));
+        // ui->inImg->setScaledContents(true); // 让图像自适应QLabel大小
     }
 }
 
