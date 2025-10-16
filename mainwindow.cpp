@@ -46,6 +46,7 @@ void MainWindow::initCap()
     connect(timer, &QTimer::timeout, this, &MainWindow::update_camera_display);
     timer->start(int(1000.0f/Protocol::FPS));
     if (infering) sharedCondition.wakeOne();
+    QMessageBox::about(this, "成功", "摄像头已开启！");
 }
 
 // 选择单个文件
@@ -186,7 +187,6 @@ void MainWindow::selectMNN()
 void MainWindow::mainThread()
 {
     ui->infer->setDisabled(1);
-    infering = 1;
     ui->MNNdir->setReadOnly(1);
     qDebug()<<"加载MNN模型...";
     auto interpreter = std::shared_ptr<MNN::Interpreter>(MNN::Interpreter::createFromFile(MNNdir.toStdString().c_str()));
@@ -233,6 +233,7 @@ void MainWindow::mainThread()
     task->newTask(afterProcessor);
     qDebug()<<"create afterProcessor done";
     connect(afterProcessor, &Afterprocess::resultImg, this, &MainWindow::visualizeResult);
+    infering = 1;
 
 }
 
@@ -246,6 +247,9 @@ void MainWindow::visualizeResult(const cv::Mat r)
 
 void MainWindow::update_camera_display()
 {
+    // if(imgList.length()>MAX_LIST_LEN) return;
+    if(imgList.length()) imgList.clear();
+    if(!infering) return;
     cv::Mat frame;
     cap >> frame; // 从摄像头抓一帧画面
 
@@ -254,6 +258,7 @@ void MainWindow::update_camera_display()
         inputImg img;
         img.oImg = frame;
         imgList.append(img);
+        if (infering) sharedCondition.wakeOne();
 
         // 颜色频道转换 BGR -> RGB
         // cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
