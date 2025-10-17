@@ -23,7 +23,7 @@ void Infer::stop()
 {
     QMutexLocker locker(m_mutexPtr);
     m_stopped = true;
-    m_condPtr->wakeOne(); // 叫醒可能正在睡觉的线程，让它看到 m_stopped 变成 true 了然后自己退出喵
+    m_condPtr->wakeOne();
 }
 
 void Infer::doWork()
@@ -35,10 +35,6 @@ void Infer::doWork()
         while (m_inputTensorPtr->isEmpty() && !m_stopped)
         {
             // qDebug() << "没有tensor了";
-            // 如果列表是空的，就调用 wait()，它会：
-            // a. 自动解开 m_mutexPtr 这个锁
-            // b. 让线程在这里睡觉
-            // c. 被唤醒后，会自动重新锁上 m_mutexPtr，然后继续执行
             m_condPtr->wait(m_mutexPtr);
         }
         if (m_stopped) {
