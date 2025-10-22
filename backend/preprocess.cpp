@@ -22,6 +22,12 @@ void Preprocess::stop()
     m_condPtr->wakeOne();
 }
 
+void Preprocess::handleModeChange(bool mode)
+{
+    localMode = mode;
+}
+
+
 void Preprocess::doWork()
 {
     while (1)
@@ -46,7 +52,9 @@ void Preprocess::doWork()
         inputImg currentImg = m_imgListPtr->first();
         // currentImg.fastVisual();
 
-        m_imgListPtr->removeFirst();
+        // m_imgListPtr->removeFirst();
+        if(localMode==LIST_MODE) m_imgListPtr->removeFirst();
+        else if(localMode==LIVE_MODE) m_imgListPtr->clear();
         m_mutexPtr->unlock();
 
         // 开始处理图片 //

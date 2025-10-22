@@ -20,11 +20,21 @@ void Afterprocess::stop()
     m_condPtr->wakeOne();
 }
 
+void Afterprocess::handleModeChange(bool mode)
+{
+    localMode = mode;
+}
+
 void Afterprocess::doWork()
 {
     while (1)
     {
         m_mutexPtr->lock();
+        while (m_outputTensorPtr->size() >= MAX_LIST_LEN)
+        {
+            // 等待被消费者（Infer线程）唤醒
+            m_condPtr->wait(m_mutexPtr);
+        }
 
         while (m_outputTensorPtr->isEmpty() && !m_stopped)
         {
@@ -39,8 +49,8 @@ void Afterprocess::doWork()
         afterInfer currentResult = m_outputTensorPtr->first();
         // currentResult.fastVisual();
 
-        // cv::Mat ooImg = currentResult.oImg.clone();
-        m_outputTensorPtr->removeFirst();
+        if(localMode==LIST_MODE) m_outputTensorPtr->removeFirst();
+        else if(localMode==LIVE_MODE) m_outputTensorPtr->clear();
         m_mutexPtr->unlock();
 
         // 开始后处理 //
@@ -50,9 +60,7 @@ void Afterprocess::doWork()
         if (!detections.empty())
         {
             myutils::scale_coords(detections, currentResult);
-
             // qDebug() << "检测到 " << detections.size() << " 个目标。";
-
             for (const auto& det : detections)
             {
                 // qDebug() << "坐标：" << det.box.x << det.box.y << det.box.width << det.box.height;

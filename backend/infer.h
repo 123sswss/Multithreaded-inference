@@ -26,6 +26,7 @@ public:
 public slots:
     void doWork() override;
     void stop();
+    void handleModeChange(bool mode);
 private:
     QVector<afterPreprocess>* m_inputTensorPtr;     // 指向处理后结果列表的指针
     QVector<afterInfer>* m_outputTensorPtr;         // 指向推理后结果列表的指针
@@ -34,8 +35,7 @@ private:
     QMutex* m_mutexPtr;                             // 指向互斥锁的指针
     QWaitCondition* m_condPtr;                      // 指向等待条件的指针
     bool m_stopped;                                 // 控制循环是否继续的开关
-
-
+    bool localMode;                                 // 控制实时模式还是序列模式
 };
 
 #endif // INFER_H

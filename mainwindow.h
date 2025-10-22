@@ -57,7 +57,8 @@ private:
     Task* task;
     cv::Mat copy; // copy防止源被释放
     QString MNNdir;
-    bool infering=0;
+    bool infering = 0;
+    bool taskMode = LIST_MODE;
 private slots:
     void selectImg();
     void selectFolder();
@@ -68,6 +69,9 @@ private slots:
 
     void update_camera_display();
     void initCap();
+    void deleteCap();
+signals:
+    void modeChanged(bool mode);
 };
 
 #endif // MAINWINDOW_H

@@ -30,12 +30,16 @@ void MainWindow::init()
     connect(ui->infer, &QPushButton::clicked, this, &MainWindow::mainThread);
     connect(ui->selectMNN, &QPushButton::clicked, this, &MainWindow::selectMNN);
     connect(ui->openCap, &QPushButton::clicked, this, &MainWindow::initCap);
+    connect(ui->closeCap, &QPushButton::clicked, this, &MainWindow::deleteCap);
+    ui->closeCap->setDisabled(1);
     connect(ui->selectVideo, &QPushButton::clicked, this, &MainWindow::selectVideo);
     ui->vWidget->setStyleSheet("background-color: black;");
 }
 
 void MainWindow::initCap()
 {
+    ui->openCap->setDisabled(1);
+    ui->closeCap->setEnabled(1);
     cap.open(0); // 打开默认的摄像头
     if (!cap.isOpened())
     {
@@ -47,6 +51,23 @@ void MainWindow::initCap()
     timer->start(int(1000.0f/Protocol::FPS));
     if (infering) sharedCondition.wakeOne();
     QMessageBox::about(this, "成功", "摄像头已开启！");
+    taskMode = LIVE_MODE;
+    emit modeChanged(taskMode);
+}
+
+void MainWindow::deleteCap()
+{
+    if (cap.isOpened())
+    {
+        cap.release();
+        disconnect(timer, &QTimer::timeout, this, &MainWindow::update_camera_display);
+        delete timer;
+        taskMode = LIST_MODE;
+        emit modeChanged(taskMode);
+        ui->openCap->setEnabled(1);
+        ui->closeCap->setDisabled(1);
+    }
+
 }
 
 // 选择单个文件
@@ -216,6 +237,7 @@ void MainWindow::mainThread()
                                               &sharedMutex,
                                               &sharedCondition);
     task->newTask(preprocessor);
+    connect(this, &MainWindow::modeChanged, preprocessor, &Preprocess::handleModeChange);
     qDebug()<<"create preprocessor done";
     // 推理
     Infer* infer = new Infer(&inputTensorList,
@@ -225,12 +247,14 @@ void MainWindow::mainThread()
                              &sharedMutex,
                              &sharedCondition);
     task->newTask(infer);
+    connect(this, &MainWindow::modeChanged, infer, &Infer::handleModeChange);
     qDebug()<<"create infer done";
     // 后处理
     Afterprocess* afterProcessor = new Afterprocess(&outPutTensorList,
                                                     &sharedMutex,
                                                     &sharedCondition);
     task->newTask(afterProcessor);
+    connect(this, &MainWindow::modeChanged, afterProcessor, &Afterprocess::handleModeChange);
     qDebug()<<"create afterProcessor done";
     connect(afterProcessor, &Afterprocess::resultImg, this, &MainWindow::visualizeResult);
     infering = 1;
@@ -248,7 +272,7 @@ void MainWindow::visualizeResult(const cv::Mat r)
 void MainWindow::update_camera_display()
 {
     // if(imgList.length()>MAX_LIST_LEN) return;
-    if(imgList.length()) imgList.clear();
+    // if(imgList.length()) imgList.clear();
     if(!infering) return;
     cv::Mat frame;
     cap >> frame; // 从摄像头抓一帧画面

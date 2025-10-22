@@ -26,11 +26,21 @@ void Infer::stop()
     m_condPtr->wakeOne();
 }
 
+void Infer::handleModeChange(bool mode)
+{
+    localMode = mode;
+}
+
 void Infer::doWork()
 {
     while (1)
     {
         m_mutexPtr->lock();
+        while (m_inputTensorPtr->size() >= MAX_LIST_LEN)
+        {
+            // 等待被消费者（Infer线程）唤醒
+            m_condPtr->wait(m_mutexPtr);
+        }
 
         while (m_inputTensorPtr->isEmpty() && !m_stopped)
         {
@@ -44,7 +54,10 @@ void Infer::doWork()
 
         afterPreprocess currentTensor = m_inputTensorPtr->first();
 
-        m_inputTensorPtr->removeFirst();
+        // m_inputTensorPtr->removeFirst();
+        if(localMode==LIST_MODE) m_inputTensorPtr->removeFirst();
+        else if(localMode==LIVE_MODE) m_inputTensorPtr->clear();
+
         m_mutexPtr->unlock();
         afterInfer tmp;
         // 开始推理 //

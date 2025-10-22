@@ -26,7 +26,7 @@
          </size>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="0" column="4">
+         <item row="0" column="5">
           <spacer name="horizontalSpacer_5">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -46,6 +46,13 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="3">
+          <widget class="QPushButton" name="openCap">
+           <property name="text">
+            <string>开启摄像头</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="selectImg">
            <property name="text">
@@ -60,10 +67,10 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="3">
-          <widget class="QPushButton" name="openCap">
+         <item row="0" column="4">
+          <widget class="QPushButton" name="closeCap">
            <property name="text">
-            <string>开启摄像头</string>
+            <string>关闭摄像头</string>
            </property>
           </widget>
          </item>
